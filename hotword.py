@@ -30,7 +30,7 @@ from google.assistant.library.file_helpers import existing_file
 import paho.mqtt.publish as mqtt_publish
 from paho.mqtt.client import Client
 from time import sleep
-
+import shelve
 
 DEVICE_API_URL = 'https://embeddedassistant.googleapis.com/v1alpha2'
 
@@ -38,6 +38,7 @@ class HotWord(object):
     
     def __init__(self):
         self.received_lamp_state = None
+        self.color_database = json.load(open('color.json'))
         self.client=Client(client_id ='google_home')
         self.client.on_connect = self.on_connect
         self.client.connect('localhost',port=1883,keepalive=60)
@@ -106,6 +107,17 @@ class HotWord(object):
                         self.received_lamp_state['on'] = False
                         print('Turning the LED off.')
                     self.client.publish('/lamp/set_config', json.dumps(self.received_lamp_state), qos=1)
+                if command == "action.devices.commands.ColorAbsolute":
+                    if params['color']:
+                        color = params['color'].get('name')
+                        hue = self.color_database[color]['hue']
+                        saturation = self.color_database[color]['saturation']
+                        self.received_lamp_state['color']['h'] = round(hue, 2)
+                        self.received_lamp_state['color']['s'] = round(saturation, 2)
+                        self.received_lamp_state['client'] = 'google_home'
+                        self.client.publish('/lamp/set_config', json.dumps(self.received_lamp_state), qos=1)
+
+
                 sleep(0.1)
                 self.client.loop_stop()
                         
