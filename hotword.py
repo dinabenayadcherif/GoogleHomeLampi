@@ -109,6 +109,7 @@ class HotWord(object):
                     self.client.publish('/lamp/set_config', json.dumps(self.received_lamp_state), qos=1)
                 if command == "action.devices.commands.ColorAbsolute":
                     if params['color']:
+                        print("hello it is me color")
                         color = params['color'].get('name')
                         hue = self.color_database[color]['hue']
                         saturation = self.color_database[color]['saturation']
@@ -116,8 +117,14 @@ class HotWord(object):
                         self.received_lamp_state['color']['s'] = round(saturation, 2)
                         self.received_lamp_state['client'] = 'google_home'
                         self.client.publish('/lamp/set_config', json.dumps(self.received_lamp_state), qos=1)
-
-
+                if command == "action.devices.commands.BrightnessAbsolute":
+                    if params['brightness']:
+                        print("hello")
+                        brightness = (params['brightness'])/100
+                        print(brightness)
+                        self.received_lamp_state['brightness'] = brightness
+                        self.received_lamp_state['client'] = 'google_home'
+                        self.client.publish('/lamp/set_config', json.dumps(self.received_lamp_state), qos=1)
                 sleep(0.1)
                 self.client.loop_stop()
                         
